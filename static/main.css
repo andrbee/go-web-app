@@ -1,0 +1,15 @@
+body {
+	background: #f6f6f6;
+}
+.item__comment {
+	display: block;
+	width: 200px;
+	background: aqua;
+	color: black;
+	padding: 5px;
+	line-height: 1;	
+}
+
+.item__comment:not(:last-of-type) {
+	margin-bottom: 10px; 
+}

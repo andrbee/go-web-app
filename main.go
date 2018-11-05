@@ -25,8 +25,8 @@ func main() {
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static",http.FileServer(http.Dir("./static"))))
 
-	r.HandleFunc("/", indexGetHandler).Methods("GET")
-	r.HandleFunc("/", indexPostHandler).Methods("POST")
+	r.HandleFunc("/", AuthRequired(indexGetHandler)).Methods("GET")
+	r.HandleFunc("/", AuthRequired(indexPostHandler).Methods("POST")
 
 	r.HandleFunc("/login", loginGetHandler).Methods("GET")
 	r.HandleFunc("/login", loginPostHandler).Methods("POST")
@@ -38,15 +38,19 @@ func main() {
 	http.ListenAndServe(":8000",nil)
 
 }
-
-func indexGetHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "sessionId")
-	_, ok := session.Values["user"]
-	if !ok {
-		http.Redirect(w, r, "/login", 302)
-		return
+func AuthRequired(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// before action
+		session, _ := store.Get(r, "sessionId")
+		_, ok := session.Values["user"]
+		if !ok {
+			http.Redirect(w, r, "/login", 302)
+			return
+		}
+		handler.ServeHTTP(w, r)
 	}
-
+}
+func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 	comments, err := client.LRange("comments",0,10).Result()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)		

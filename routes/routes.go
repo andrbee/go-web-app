@@ -1,13 +1,12 @@
 package routes
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"golang.org/x/crypto/bcrypt"
 	"../middleware"
-	"../sessions"
 	"../models"
+	"../sessions"
 	"../utils"
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
 func NewRouter() *mux.Router {
@@ -29,9 +28,9 @@ func NewRouter() *mux.Router {
 }
 
 func indexGetHandler(w http.ResponseWriter, r *http.Request) {
-	comments, err := models.Client.LRange("comments",0,10).Result()
+	comments, err := models.GetAllComments()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)		
+		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal Server Error"))
 		return
 	}
@@ -41,9 +40,17 @@ func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 func indexPostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	comment := r.PostForm.Get("comment")
-	if comment != "" {
-		models.Client.LPush("comments", comment)	
-	}	
+	if comment == "" {
+		return
+	}
+
+	err := models.AddComment(comment)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+		return
+	}
+
 	http.Redirect(w, r, "/",302)
 }
 
@@ -58,16 +65,10 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.PostForm.Get("username")
 	password := r.PostForm.Get("password")
 
-	hashPass, err := models.Client.Get("user:" + username).Bytes()
-	if err != nil {
-		utils.ExecuteTemplate(w, "login.html", "User is not found")
-		return
-	}
-
-	err = bcrypt.CompareHashAndPassword(hashPass, []byte (password))
+	err := models.AuthUser(username, password)
 
 	if err != nil {
-		utils.ExecuteTemplate(w, "login.html", "User hasn't access")
+		utils.ExecuteTemplate(w, "login.html", err)
 		return
 	}
 
@@ -87,24 +88,11 @@ func registerPostHandler(w http.ResponseWriter, r *http.Request){
 
 	username := r.PostForm.Get("username")
 	password := r.PostForm.Get("password")
-	error := ""
-	if username == "" || password == "" {
-		error = "Login Invalid !"
-	}
-
-	if error != "" {
-		utils.ExecuteTemplate(w, "register.html", error)	
-		return
-	}
-	cost := bcrypt.DefaultCost
-	hashPass, err := bcrypt.GenerateFromPassword([]byte(password), cost)
+	err := models.CreateUser(username, password)
 
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal Server Error"))
-		return
-	} 
+		utils.ExecuteTemplate(w, "register.html", err)
+	}
 
-	models.Client.Set("user:" + username, hashPass, 0)
 	http.Redirect(w, r, "/login", 302)	
 }

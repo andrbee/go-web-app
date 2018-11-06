@@ -13,3 +13,23 @@ body {
 .item__comment:not(:last-of-type) {
 	margin-bottom: 10px; 
 }
+code {
+	display: inline-block;
+	padding: 15px;
+	background: #d6f7ff;
+	color: mediumvioletred;
+	margin-bottom: 20px;
+}
+code.info {
+	background: #9dffa4;
+	color: #000;
+}
+
+code.warning {
+	background: #5d5b5c;
+}
+
+code.error {
+	background: #ff9387;
+	color: #fff;
+}

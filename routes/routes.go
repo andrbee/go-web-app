@@ -11,20 +11,20 @@ import (
 
 func NewRouter() *mux.Router {
 
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static",http.FileServer(http.Dir("./static"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static",http.FileServer(http.Dir("./static"))))
 
-	r.HandleFunc("/", middleware.AuthRequired(indexGetHandler)).Methods("GET")
-	r.HandleFunc("/", middleware.AuthRequired(indexPostHandler)).Methods("POST")
+	router.HandleFunc("/", middleware.AuthRequired(indexGetHandler)).Methods("GET")
+	router.HandleFunc("/", middleware.AuthRequired(indexPostHandler)).Methods("POST")
 
-	r.HandleFunc("/login", loginGetHandler).Methods("GET")
-	r.HandleFunc("/login", loginPostHandler).Methods("POST")
+	router.HandleFunc("/login", loginGetHandler).Methods("GET")
+	router.HandleFunc("/login", loginPostHandler).Methods("POST")
 
-	r.HandleFunc("/register", registerGetHandler).Methods("GET")
-	r.HandleFunc("/register", registerPostHandler).Methods("POST")
+	router.HandleFunc("/register", registerGetHandler).Methods("GET")
+	router.HandleFunc("/register", registerPostHandler).Methods("POST")
 
-	return r
+	return router
 }
 
 func indexGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,13 +34,15 @@ func indexGetHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Internal Server Error"))
 		return
 	}
-	utils.ExecuteTemplate(w, "index.html",comments)
+	utils.ExecuteTemplate(w, "index.html", comments)
 }
 
 func indexPostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	comment := r.PostForm.Get("comment")
+
 	if comment == "" {
+		http.Redirect(w, r, "/",302)
 		return
 	}
 

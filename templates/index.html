@@ -5,15 +5,33 @@
 	<link rel="stylesheet" type="text/css" href="/static/main.css">
 </head>
 <body>
-<h1>Comments</h1>
-<form method="POST">
-	<div>
-		<textarea name="comment"></textarea>
-    </div>
-	<button>Add Comment</button>
+<h1 class="main__title">Comments</h1>
+<form method="POST" class="form__comments">
+	<textarea name="comment" class="area__comment"></textarea>
+	<button type="submit" class="but_submit__comment">Add Comment</button>
 </form>
+<div class="content__comments">
 {{range .}}
-<div class="item__comment">{{ . }}</div>
-{{end}}	
+    <div class="item__comment">{{ . }}</div>
+{{end}}
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var butAddComment = document.querySelector('.form__comments');
+
+        butAddComment.addEventListener('submit',function (event) {
+            var areaMessage = document.querySelector('.area__comment');
+            var val = areaMessage.value;
+
+            if(val.length) {
+                return true;
+			}
+
+            event.preventDefault()
+
+
+        })
+    });
+</script>
 </body>
 </html>

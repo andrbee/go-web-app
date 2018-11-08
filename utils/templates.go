@@ -1,8 +1,8 @@
 package utils
 
-import (	
-	"net/http"
+import (
 	"html/template"
+	"net/http"
 )
 
 var templates *template.Template
